@@ -47,14 +47,10 @@ const requestListener = async (req, res) => {
 
 const startApp = async () => {
     /***************************
-    Cache the initial router request on app startup
+    Cache the initial main request on app startup
     ****************************/
-    console.log('*** CACHING router.js ***');
-    await generateBundle('frontend/router.js');
-    console.log('*** CACHING lit-element-hydrate-support.js ***');
-    await generateBundle('node_modules/@lit-labs/ssr-client/lit-element-hydrate-support.js');
-    //console.log('*** CACHING components/docs-nav.js ***');
-    //await generateBundle('frontend/components/docs-nav.js');
+    console.log('*** CACHING main.js ***');
+    await generateBundle('frontend/main.js');
 
     const host = 4077;
 

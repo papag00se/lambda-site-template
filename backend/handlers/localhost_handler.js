@@ -35,6 +35,7 @@ export const localhostHandler = async (req, res) => {
             if (!fs.existsSync(file)) {
                 res.status = 404;
                 res.body = 'Not Found';
+                res.headers['X-Component'] = 'localhost_handler';
                 return true;
             }
 

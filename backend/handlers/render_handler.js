@@ -1,4 +1,3 @@
-import '../../frontend/router.js';
 import { Request, Response } from '../../helpers/http.js';
 import fs from 'fs';
 import { URLPattern } from 'urlpattern-polyfill';
@@ -13,16 +12,14 @@ if (!globalThis.URLPattern) {
  * @param {Response} res
  * @returns {Promise<Response>}
  */
-export const serverSideRenderHandler = async (req, res) => {
-    void req;
-
-    const indexFile = './index.html';
+export const renderHandler = async (req, res) => {
+    const indexFile = req.headers.host?.includes('localhost') ? './frontend/index.html' : `./index.html`;
     const index = fs.readFileSync(indexFile).toString('utf8');
     res.headers['content-type'] = 'text/html';
     res.status = 200;
     const appContext = `window.ApplicationContext = ${JSON.stringify(ApplicationCache.publicContext)};`;
 
-    //res.body = collectResultSync(render(html`${unsafeStatic(index)}`)).replace('<!--ApplicationContext-->', appContext);
+    res.body = index.replace('<!--ApplicationContext-->', appContext);
 
     return res;
 };

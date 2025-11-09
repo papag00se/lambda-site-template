@@ -14,7 +14,7 @@ export default (async () => ({
 	input: `backend/lambda.js`,
 	plugins: [
 		commonjs(),
-		nodeResolve({dedupe: ['@koralabs/kora-labs-common', '@koralabs/kora-labs-databases', '@hyperionbt/helios']}),
+		nodeResolve(),
 		json(),
 	],
 	output: {

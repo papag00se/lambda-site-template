@@ -3,6 +3,7 @@ import path from 'path';
 import { ApplicationCache } from '../helpers/cache.js';
 import { localExtensions } from '../helpers/constants.js';
 import { s3Handler } from './handlers/s3_handler.js';
+import { renderHandler } from './handlers/render_handler.js';
 
 /**
  * @callback MiddlewareHandler
@@ -66,9 +67,14 @@ export const processRequest = async (req, handler) => {
         return s3Handler(req, res);
     }
 
+    if (req.url.pathname == '/') {
+        return renderHandler(req, res);
+    }
+
     // -----          404            -------/
     res.body = 'Not Found';
     res.headers['Content-Type'] = 'text/plain';
+    res.headers['X-Component'] = 'process_request';
     res.status = 404;
     // Context is only meant per request, so clear at end of request
     ApplicationCache.context = {};

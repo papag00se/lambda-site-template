@@ -6,6 +6,8 @@
     "type": "module",
     "license": "UNLICENSE",
     "dependencies": {
+        "@lit-labs/ssr-dom-shim": "^1.4.0",
+        "mime": "^4.1.0",
         "urlpattern-polyfill": "^10.0.0"
     },
     "scripts": {
