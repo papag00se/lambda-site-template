@@ -1,0 +1,6 @@
+{
+    "watch": ["./backend", "./frontend", ".env"],
+    "ext": "js,json,css,html",
+    "ignore": ["**/logs/*", "**/*.{spec,test}.js"],
+    "exec": "node"
+}
