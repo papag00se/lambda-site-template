@@ -1,0 +1,23 @@
+name: lambda.site.template
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    name: Deploying from ${{ github.ref_name }}
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        lfs: false
+
+    - name: Deploy ${{ github.action }}
+      id: deploy
+      env:
+        SECRETS_CONTEXT: ${{ toJson(secrets) }}
+        VARS_CONTEXT: ${{ toJson(vars) }}
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+        NODE_VERSION: 22
+      run: |
+        set -eu
+        chmod +x ./deployment/main.sh && ./deployment/main.sh
