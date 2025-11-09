@@ -13,8 +13,8 @@
     "scripts": {
         "dev": "NODE_ENV=preprod nodemon -r dotenv/config --trace-warnings backend/local.js",
         "prod": "NODE_ENV=production nodemon --trace-warnings backend/local.js",
-        "build:frontend": "rollup -c rollup.frontend.config.js",
-        "build:backend": "rollup -c rollup.backend.config.js"
+        "build:frontend": "rollup -c ./deployment/rollup.frontend.config.js",
+        "build:backend": "rollup -c ./deployment/rollup.backend.config.js"
     },
     "devDependencies": {
         "@aws-sdk/client-s3": "^3.537.0",
