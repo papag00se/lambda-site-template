@@ -71,6 +71,13 @@ export const processRequest = async (req, handler) => {
         return renderHandler(req, res);
     }
 
+    if (req.url.pathname == '/api/test') {
+        return {
+            status: 200,
+            body: 'Successful request to the backend API'
+        };
+    }
+
     // -----          404            -------/
     res.body = 'Not Found';
     res.headers['Content-Type'] = 'text/plain';

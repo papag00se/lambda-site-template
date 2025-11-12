@@ -40,7 +40,10 @@ const requestListener = async (req, res) => {
         }
     }
     res.statusCode = response.status;
-    const encoding = response.headers['Content-Type']?.startsWith('image') ? 'base64' : 'utf8';
+    const encoding = response.headers ? 
+        (response.headers['Content-Type']?.startsWith('image') ? 'base64' : 'utf8') 
+        : 'utf8';
+    console.log(res.statusCode, response.body, encoding)
     res.write(response.body || '', encoding);
     res.end();
 };

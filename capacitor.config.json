@@ -1,0 +1,5 @@
+{
+  "appId": "com.remindsly",
+  "appName": "Remindsly",
+  "webDir": "frontend/dist"
+}

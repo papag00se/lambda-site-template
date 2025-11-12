@@ -13,11 +13,17 @@
     "scripts": {
         "dev": "NODE_ENV=preprod nodemon -r dotenv/config --trace-warnings backend/local.js",
         "prod": "NODE_ENV=production nodemon --trace-warnings backend/local.js",
-        "build:frontend": "rollup -c ./deployment/rollup.frontend.config.js",
-        "build:backend": "rollup -c ./deployment/rollup.backend.config.js"
+        "build:frontend": "rm -rf frontend/dist && rollup -c ./deployment/rollup.frontend.config.js",
+        "build:backend": "rollup -c ./deployment/rollup.backend.config.js",
+        "sync:android": "npm run build:frontend && npx cap sync android",
+        "sync:ios": "npm run build:frontend && npx cap sync ios"
     },
     "devDependencies": {
         "@aws-sdk/client-s3": "^3.537.0",
+        "@capacitor/android": "^7.4.4",
+        "@capacitor/cli": "^7.4.4",
+        "@capacitor/core": "^7.4.4",
+        "@capacitor/ios": "^7.4.4",
         "@rollup/plugin-commonjs": "^25.0.7",
         "@rollup/plugin-inject": "^5.0.5",
         "@rollup/plugin-json": "^6.1.0",

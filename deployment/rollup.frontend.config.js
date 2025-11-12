@@ -19,13 +19,17 @@ const input = inputs.map(m =>{
 	return file;
 });
 
-for (const m of indexHtml.matchAll(/(?:src|href|import\()=?(?:'|")(?!http)(.*\.(?:[a-z]{1,5}))(?:'|")/gm)) {
-	indexHtml = indexHtml.replace(m[1], `https://cdn.${process.env.SITE_DOMAIN}/${process.env.FINGERPRINT}${m[1]}`);
-};
-//                                                                         m[1]
-for (const m of indexHtml.matchAll(/(?:src|href|import\()=?(?:'|")(?!http)(\/.*)(?:'|")/gm)) {
-	indexHtml = indexHtml.replace(m[1], `${process.env.BASE_FOLDER ?? ''}${m[1]}`);
-};
+if (process.env.SITE_DOMAIN) {
+	for (const m of indexHtml.matchAll(/(?:src|href|import\()=?(?:'|")(?!http)(.*\.(?:[a-z]{1,5}))(?:'|")/gm)) {
+		indexHtml = indexHtml.replace(m[1], `https://cdn.${process.env.SITE_DOMAIN}/${process.env.FINGERPRINT}${m[1]}`);
+	};
+}
+if (process.env.BASE_FOLDER) {
+	//                                                                         m[1]
+	for (const m of indexHtml.matchAll(/(?:src|href|import\()=?(?:'|")(?!http)(\/.*)(?:'|")/gm)) {
+		indexHtml = indexHtml.replace(m[1], `${process.env.BASE_FOLDER ?? ''}${m[1]}`);
+	};
+}
 
 if (!fs.existsSync(distDir)){
     fs.mkdirSync(distDir);
