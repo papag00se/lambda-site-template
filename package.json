@@ -16,7 +16,7 @@
         "build:frontend": "rm -rf frontend/dist && rollup -c ./deployment/rollup.frontend.config.js && cp frontend/$APP_ENV${APP_ENV:+.}env.js frontend/dist/env.js",
         "build:backend": "rollup -c ./deployment/rollup.backend.config.js",
         "sync:android": "(export APP_ENV=android; npm run build:frontend && npx cap sync android)",
-        "sync:ios": "(export APP_ENV=ios npm run build:frontend && npx cap sync ios)"
+        "sync:ios": "(export APP_ENV=ios; npm run build:frontend && npx cap sync ios)"
     },
     "devDependencies": {
         "@aws-sdk/client-s3": "^3.537.0",
