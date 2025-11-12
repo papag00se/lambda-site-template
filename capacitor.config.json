@@ -1,5 +1,5 @@
 {
-  "appId": "com.lambda-template",
+  "appId": "com.lambda.template",
   "appName": "Lambda Site App Template",
   "webDir": "frontend/dist",
   "server": {"androidScheme": "http", "cleartext": true}
