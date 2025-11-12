@@ -3,7 +3,7 @@ import { Request } from '../helpers/http.js';
 import { processRequest } from './process_request.js';
 import { createServer } from 'http';
 import { generateBundle } from '../helpers/bundler.js';
-import { localExtensions } from '../helpers/constants.js';
+import { isLocalHost, localExtensions } from '../helpers/constants.js';
 import path from 'path';
 import { localhostHandler } from './handlers/localhost_handler.js';
 
@@ -12,6 +12,7 @@ import { localhostHandler } from './handlers/localhost_handler.js';
  * @param {import('http').ServerResponse} res
  */
 const requestListener = async (req, res) => {
+    console.log('INCOMING REQUEST', req.url, req.method)
     /** @type {Record<string, string>} */
     const headers = {};
     if (req.headers) {
@@ -29,13 +30,14 @@ const requestListener = async (req, res) => {
 
     const response = await processRequest(request, async (rq, rs) => {
         const hostHeader = headers['host'];
-        if (hostHeader?.includes('localhost') && localExtensions.includes(path.extname(request.url.pathname || ''))) {
+        if (isLocalHost(hostHeader.split(':')[0]) && localExtensions.includes(path.extname(request.url.pathname || ''))) {
             return await localhostHandler(rq, rs);
         }
         return false;
     });
     if (response.headers) {
         for (const [, [key, value]] of Object.entries(response.headers).entries()) {
+            console.log('HEADER', key, value)
             res.setHeader(key, value);
         }
     }
@@ -67,3 +69,4 @@ const startApp = async () => {
 };
 
 startApp();
+  

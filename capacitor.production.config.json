@@ -1,0 +1,5 @@
+{
+  "appId": "com.lambda-template",
+  "appName": "Lambda Site App Template",
+  "webDir": "frontend/dist"
+}

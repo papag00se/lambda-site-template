@@ -21,19 +21,19 @@ import { renderHandler } from './handlers/render_handler.js';
 export const processRequest = async (req, handler) => {
     const res = new Response({ headers: {} });
 
-    // -----          CORS           -------/
-    if (req.method === 'OPTIONS') {
-        res.headers['Access-Control-Allow-Origin'] = '*';
-        res.headers['Access-Control-Allow-Headers'] = '*';
-        res.headers['Access-Control-Allow-Methods'] = '*';
-        res.status = 200;
-        return res;
-    }
 
     /***************************************/
     /*          GLOBAL HEADERS             */
     /***************************************/
-    res.headers['kora-application'] = 'hal.handle.me';
+    res.headers['Access-Control-Allow-Origin'] = '*';
+    res.headers['Access-Control-Allow-Headers'] = '*';
+    res.headers['Access-Control-Allow-Methods'] = '*';
+
+    // -----          CORS           -------/
+    if (req.method == 'OPTIONS') {
+        res.status = 200;
+        return res;
+    }
 
     /***************************************/
     /*            MIDDLEWARE               */
@@ -74,7 +74,8 @@ export const processRequest = async (req, handler) => {
     if (req.url.pathname == '/api/test') {
         return {
             status: 200,
-            body: 'Successful request to the backend API'
+            body: 'Successful request to the backend API',
+            headers: res.headers
         };
     }
 
@@ -87,3 +88,4 @@ export const processRequest = async (req, handler) => {
     ApplicationCache.context = {};
     return res;
 };
+ 

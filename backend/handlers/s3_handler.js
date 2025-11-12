@@ -16,17 +16,13 @@ export const s3Handler = async (req, res) => {
         if (file === '/') {
             file = `/index.html`;
         }
-        if (path.extname(file) === '.glb') {
-            file = file.substring(1); // remove leading slash only
-        } else {
-            file = `/${process.env.VERSION_HASH}/${file.substring(1)}`;
-        }
+        file = `/${process.env.VERSION_HASH}/${file.substring(1)}`;
 
         const s3Client = new S3Client({});
 
         const s3Res = await s3Client.send(
             new GetObjectCommand({
-                Bucket: 'hal.handle.me',
+                Bucket: 'lambda.site',
                 Key: file
             })
         );
@@ -42,7 +38,7 @@ export const s3Handler = async (req, res) => {
             event: 'express.frontEndFilesRequest'
         });
         res.status = 500;
-        res.body = { error: 'Internal Server Error', message };
+        res.body = JSON.stringify({ error: 'Internal Server Error', message });
     }
     return res;
 };
