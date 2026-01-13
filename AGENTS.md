@@ -7,3 +7,4 @@
 - When deploying to AWS Lambda, the backend and frontend end up as two separate deployables with two separate rollup configs. The frontend gets pushed out to S3/CloudFront while the backend becomes a ALB Lambda API. As such, the `frontend` and `backend` folders don't actually exist in production. Just locally. Some code accounts for this (i.e. the renderHandler).
 - The frontend of this application also gets built as an iOS and Android application using capacitor. Mobile considerations should be considered when developing. Especially responsive design of HTML/CSS/JavaScript
 - Prefer server-side rendered content when possible, unless a frontend modal dialog is a better user experience.
+- Use curly braces for tokens in token replacement (not underscores)

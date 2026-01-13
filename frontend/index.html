@@ -1,29 +1,81 @@
-<!doctype html>
-<html>
-  <head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Lambda Site Template</title>
-    <meta name="description" content="Explore the Stratum Database for comprehensive information on the HAL system." />
-    <link rel="icon" type="image/x-icon" href="/images/favicon.png" />
+    <title>{{TITLE}}</title>
+    <meta name="description" content="{{META_DESCRIPTION}}" />
+    <link rel="icon" type="image/x-icon" href="/images/favicon.svg" />
+    <link rel="apple-touch-icon" href="/images/favicon.svg" />
     <link rel="stylesheet" href="/css/main.css" />
+    <link rel="stylesheet" href="/css/{{PAGE}}.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
   </head>
   <body>
-    <div>
-      <header>
-              <h1>HEADER</h1>
-      </header>
-      <div id="content">
-        CONTENT
-      </div>
-      <footer>
-        <div>© papag00se</div>
-      </footer>
-      <script type="module">
-        await import('/env.js');
-        // Comment below is required. DO NOT REMOVE
-        //<!--ApplicationContext-->
-        await import('/main.js');
-      </script>
-    </div>
+    <header class="site-brand">
+      <a class="site-logo" href="/" aria-label="homepage">
+        <img src="/images/logo.svg" alt="logo" />
+      </a>
+      <div class="site-nav" id="site-nav"></div>
+    </header>
+      {{MAIN}}
+    <footer>
+      <div>© papag00se</div>
+    </footer>
+    <script type="module">
+      await import('/env.js');
+      // Comment below is required. DO NOT REMOVE
+      //<!--ApplicationContext-->
+      await import('/main.js');
+      const ctx = window.ApplicationContext || {};
+      const accountId = ctx.accountId || document.cookie.split(';').map((c) => c.trim()).find((c) => c.startsWith('accountId='))?.split('=')[1];
+      const accountEmail = ctx.accountEmail;
+      if (nav && accountId) {
+        nav.innerHTML = `
+          <div class="avatar-menu">
+            <button class="avatar-trigger" id="avatar-trigger" aria-haspopup="true" aria-expanded="false">
+              <span class="avatar-circle">${(accountEmail || accountId || '?').charAt(0).toUpperCase()}</span>
+              <span class="avatar-label">${accountEmail || 'Account'}</span>
+              <svg class="avatar-caret" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            </button>
+            <div class="avatar-dropdown" id="avatar-dropdown">
+              <a href="/account" class="avatar-link">Account</a>
+              <button class="avatar-link avatar-link--ghost" type="button" id="logout-button">Log out</button>
+            </div>
+          </div>
+        `;
+
+        const trigger = document.getElementById('avatar-trigger');
+        const dropdown = document.getElementById('avatar-dropdown');
+        const logoutButton = document.getElementById('logout-button');
+
+        function toggleDropdown() {
+          const expanded = trigger.getAttribute('aria-expanded') === 'true';
+          trigger.setAttribute('aria-expanded', String(!expanded));
+          dropdown.classList.toggle('open', !expanded);
+        }
+
+        function closeDropdown() {
+          trigger.setAttribute('aria-expanded', 'false');
+          dropdown.classList.remove('open');
+        }
+
+        trigger?.addEventListener('click', (event) => {
+          event.preventDefault();
+          toggleDropdown();
+        });
+
+        document.addEventListener('click', (event) => {
+          if (!dropdown || !trigger) return;
+          if (!dropdown.contains(event.target) && !trigger.contains(event.target)) {
+            closeDropdown();
+          }
+        });
+
+        logoutButton?.addEventListener('click', () => {
+          document.cookie = 'accountId=; Path=/; Max-Age=0; SameSite=Lax';
+          window.location.href = '/login';
+        });
+      }
+    </script>
   </body>
 </html>
