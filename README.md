@@ -5,6 +5,21 @@ npx cap add android
 npx cap add ios
 ```
 
+## Tests
+
+```bash
+# one-time for browser tests
+npx playwright install chromium
+
+# run all tests
+npm test
+
+# run suites individually
+npm run test:unit
+npm run test:e2e
+npm run test:browser
+```
+
 ## Develop for Android
 
 ```bash

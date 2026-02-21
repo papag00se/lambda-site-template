@@ -141,3 +141,5 @@ vite.config.ts.timestamp-*
 temp
 android
 ios
+playwright-report
+test-results
