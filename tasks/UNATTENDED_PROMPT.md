@@ -1,4 +1,4 @@
-You are running an unattended execution session for /home/jesse/src/kora-labs/kora-bot.
+You are running an unattended execution session
 
 Objective:
 - Complete all pending tasks in tasks/TODO.md.
