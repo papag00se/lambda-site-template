@@ -73,10 +73,10 @@ test('OPTIONS /api/test short-circuits with 200', async () => {
     assert.equal(response.headers.get('access-control-allow-methods'), '*');
 });
 
-test('GET /missing-route returns 404 with process handler marker', async () => {
+test('GET /missing-route returns 404 from render handler', async () => {
     const response = await fetch(`${BASE_URL}/missing-route`);
 
     assert.equal(response.status, 404);
-    assert.equal(response.headers.get('x-component'), 'process_request');
+    assert.equal(response.headers.get('x-component'), 'render_handler');
     assert.equal(await response.text(), 'Not Found');
 });

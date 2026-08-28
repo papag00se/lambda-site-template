@@ -1,0 +1,100 @@
+---
+// Base layout — every page wraps in this.
+// Vanilla Astro: frontmatter is JS; template is HTML with {expressions}.
+//
+// IMPORTANT: the inline <script> at the bottom contains the runtime marker
+// `//<!--ApplicationContext-->`. The backend renderHandler substitutes this
+// marker with `window.ApplicationContext = {...}` per request. Keep the
+// marker exactly as written. The script tag uses `type="module" is:inline`
+// so Astro does NOT bundle/transform it (top-level await + raw passthrough).
+//
+// Props arrive two ways:
+//   - .astro pages: <Base title="..." description="..." slug="..."> as direct props
+//   - .md/.mdx pages: frontmatter (layout: '../layouts/Base.astro') flows in as Astro.props.frontmatter
+// Read from frontmatter first, fall back to direct props.
+//
+// Page discovery: nav is auto-built from page frontmatter. Drop a new
+// .mdx into src/pages with `navLabel` + `navOrder` set and it shows up
+// here automatically. .astro pages need `export const frontmatter = {...}`
+// in their script section to participate.
+import fs from 'node:fs';
+import path from 'node:path';
+
+const { frontmatter = {} } = Astro.props;
+const title = frontmatter.title ?? Astro.props.title ?? '';
+const description = frontmatter.description ?? Astro.props.description ?? '';
+const slug = frontmatter.slug ?? Astro.props.slug ?? 'home';
+
+const pageModules = /** @type {Record<string, {frontmatter?: any}>} */ (
+    import.meta.glob('../pages/*.{astro,mdx}', { eager: true })
+);
+const navItems = Object.values(pageModules)
+    .filter((m) => m.frontmatter?.navLabel)
+    .sort((a, b) => (a.frontmatter.navOrder ?? 999) - (b.frontmatter.navOrder ?? 999))
+    .map((m) => ({
+        label: m.frontmatter.navLabel,
+        href: m.frontmatter.slug === 'home' ? '/' : `/${m.frontmatter.slug}`,
+        slug: m.frontmatter.slug
+    }));
+
+// Per-page CSS is opt-in: only link the stylesheet if the file actually
+// exists in public/css/. Avoids 404s for pages without bespoke styles.
+const cssDir = path.join(process.cwd(), 'frontend', 'public', 'css');
+const hasPageCss = fs.existsSync(path.join(cssDir, `${slug}.css`));
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/x-icon" href="/images/favicon.png" />
+    <link rel="apple-touch-icon" href="/images/favicon.png" />
+    <link rel="stylesheet" href="/css/main.css" />
+    {hasPageCss && <link rel="stylesheet" href={`/css/${slug}.css`} />}
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+    <header class="site-brand">
+        <a class="site-logo" href="/" aria-label="homepage">
+            <img src="/images/logo.svg" alt="logo" />
+        </a>
+        {navItems.length > 0 && (
+            <nav class="site-nav-primary" aria-label="primary">
+                {navItems.map((item) => (
+                    <a href={item.href} aria-current={slug === item.slug ? 'page' : undefined}>{item.label}</a>
+                ))}
+            </nav>
+        )}
+        <div class="site-nav" id="site-nav"></div>
+    </header>
+    <slot />
+    <footer>
+        <div>© papag00se</div>
+    </footer>
+    <script type="module" is:inline>
+        await import('/env.js');
+        // Comment below is required. DO NOT REMOVE
+        //<!--ApplicationContext-->
+        await import('/main.js');
+        const ctx = window.ApplicationContext || {};
+        const accountId = ctx.accountId || document.cookie.split(';').map((c) => c.trim()).find((c) => c.startsWith('accountId='))?.split('=')[1];
+        const accountEmail = ctx.accountEmail;
+        const nav = document.getElementById('site-nav');
+        if (nav && accountId) {
+            nav.innerHTML = `
+                <div class="avatar-menu">
+                    <button class="avatar-trigger" id="avatar-trigger" aria-haspopup="true" aria-expanded="false">
+                        <span class="avatar-circle">${(accountEmail || accountId || '?').charAt(0).toUpperCase()}</span>
+                        <span class="avatar-label">${accountEmail || 'Account'}</span>
+                    </button>
+                    <div class="avatar-dropdown" id="avatar-dropdown">
+                        <a href="/account" class="avatar-link">Account</a>
+                        <button class="avatar-link avatar-link--ghost" type="button" id="logout-button">Log out</button>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

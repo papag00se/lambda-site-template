@@ -25,6 +25,38 @@
 - `ApplicationCache.context` is meant to pass objects and variables on the backend between code, do not use `ApplicationCache.publicContext` for that purpose.
 - `ApplicationCache.cache`is used for local only. It generally just caches rollup renders from local.js
 
+## // STACK — VANILLA ASTRO ONLY (durable rule)
+- **Static-site framework:** Astro. **Vanilla Astro only — no UI-framework integrations.** Do NOT add `@astrojs/react`, `@astrojs/vue`, `@astrojs/svelte`, `@astrojs/solid`, `@astrojs/preact`, or `@astrojs/lit`. All components must be `.astro` files (Astro's own vanilla syntax). MDX (`@astrojs/mdx`) is allowed — it's a content format that uses Astro components, not a UI-framework integration. **Future sessions: do not propose adding UI-framework integrations even for "small interactive bits" — use `.astro` components, vanilla JS in `<script>` blocks, or platform-native Web Components instead.**
+- **Reasoning:** "Frameworks earn their keep" doctrine. Astro's value is build-time composition, not another runtime framework.
+
+## // CONTENT (Astro)
+- All page content lives in `frontend/src/pages/` as `.md`, `.mdx`, or `.astro` files. Frontmatter sets `title`, `description`, `slug`, and `layout` (path to a layout component).
+- The base layout is `frontend/src/layouts/Base.astro`. It contains the runtime marker `//<!--ApplicationContext-->` that the backend `renderHandler` substitutes with `window.ApplicationContext` per request — keep that marker exactly as written. Use `<script type="module" is:inline>` so Astro doesn't bundle/transform it.
+- Reusable components live in `frontend/src/components/` as `.astro` files. Components are imported and used directly in `.astro` pages, or via MDX import in `.mdx` pages.
+- Astro outputs to `frontend/dist/` (e.g., `index.astro` → `dist/index.html`; `about.mdx` → `dist/about/index.html`).
+- Static passthrough: `frontend/public/` → `dist/` root. Use this for `robots.txt`, `.well-known/*`, CSS, images, etc.
+- The backend `renderHandler` reads pre-built HTML from `dist/`; it does not parse content at request time. If a page doesn't exist in `dist/`, the handler returns 404 with `X-Component: render_handler`.
+
+### Adding or removing a page
+The page list is filesystem-driven. Drop in (or remove) one `.mdx` file in `frontend/src/pages/` and the consumers below pick it up after the next build — no registry to edit.
+
+Frontmatter fields the layout reads:
+- `title`, `description`, `slug` — required (slug must match the filename without extension).
+- `navLabel`, `navOrder` — optional. Set both to put the page in the primary nav. Lower `navOrder` = earlier.
+
+`.astro` pages need to expose the same shape via `export const frontmatter = {...}` in their script section so the nav glob in `Base.astro` can see them. See `frontend/src/pages/index.astro` for the canonical example.
+
+Consumers that auto-enumerate (no edits needed when pages change):
+- `Base.astro` — primary nav, via `import.meta.glob('../pages/*.{astro,mdx}')`.
+- `Base.astro` — per-page CSS link (`/css/{slug}.css`); only emitted if the file exists in `public/css/`.
+- `[slug].md.js` — generates `/{slug}.md` for every `.mdx` in `pages/`.
+
+## // CDN FINGERPRINTING
+- Cache-busting on deploy is done by `deployment/cdn-fingerprint.js`, a standalone post-build script. It walks the assembled `frontend/dist/${FINGERPRINT}/` tree and rewrites relative asset URLs in HTML/CSS/JS/SVG/JSON/XML/webmanifest files to `https://cdn.${SITE_DOMAIN}/${FINGERPRINT}/...`.
+- Activated automatically by `deployment/main.sh` after the move + cp steps. Inactive (clean no-op) when `SITE_DOMAIN` is not set, so dev builds are unaffected.
+- Binary assets (images, fonts, glb, video) are uploaded as-is — they don't need rewriting. References to them in the text files above are what get rewritten.
+- If a new text-based asset format starts referencing other assets and needs rewriting, add its extension to `TARGET_EXTS` in the script.
+
 ## // DEPLOYMENT
 - When deploying to AWS Lambda, the backend and frontend end up as two separate deployables with two separate rollup configs. The frontend gets pushed out to S3/CloudFront while the backend becomes a ALB Lambda API. As such, the `frontend` and `backend` folders don't actually exist in production. Just locally. Some code accounts for this (i.e. the renderHandler).
 

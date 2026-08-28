@@ -63,14 +63,12 @@ export const processRequest = async (req, handler) => {
     /*             ROUTES                  */
     /***************************************/
 
+    // Static assets (css, js, images) — served by S3 in prod, localhost handler in dev
     if (localExtensions.includes(path.extname(req.url.pathname || ''))) {
         return s3Handler(req, res);
     }
 
-    if (req.url.pathname == '/') {
-        return renderHandler(req, res);
-    }
-
+    // API routes (explicit, before the page renderer catches them)
     if (req.url.pathname == '/api/test') {
         return {
             status: 200,
@@ -79,13 +77,7 @@ export const processRequest = async (req, handler) => {
         };
     }
 
-    // -----          404            -------/
-    res.body = 'Not Found';
-    res.headers['Content-Type'] = 'text/plain';
-    res.headers['X-Component'] = 'process_request';
-    res.status = 404;
-    // Context is only meant per request, so clear at end of request
-    ApplicationCache.context = {};
-    return res;
+    // Pages — Eleventy-built HTML, dispatched by URL path. renderHandler returns
+    // its own 404 (with X-Component: render_handler) if the page doesn't exist.
+    return renderHandler(req, res);
 };
- 

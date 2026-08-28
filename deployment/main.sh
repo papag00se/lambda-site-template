@@ -82,8 +82,23 @@ else
 fi
 
 mkdir -p frontend/dist/$FINGERPRINT
-mv frontend/dist/*.js frontend/dist/*.html frontend/dist/$FINGERPRINT
+# Move all top-level build output into the fingerprint subdir.
+# Eleventy can produce both flat files (index.html, *.js) and nested per-page
+# directories (about/, work/, etc.), so we move every entry that isn't $FINGERPRINT.
+for entry in frontend/dist/*; do
+    [ -e "$entry" ] || continue
+    base=$(basename "$entry")
+    if [ "$base" != "$FINGERPRINT" ]; then
+        mv "$entry" frontend/dist/$FINGERPRINT/
+    fi
+done
 cp -r frontend/css frontend/images frontend/dist/$FINGERPRINT
+
+# CDN fingerprinting — rewrites relative asset URLs in HTML/CSS/JS under
+# the assembled FINGERPRINT directory to https://cdn.$SITE_DOMAIN/$FINGERPRINT/...
+# No-op when SITE_DOMAIN is not set.
+SITE_DOMAIN=${SITE_DOMAIN:-$DEPLOYABLE} FINGERPRINT=$FINGERPRINT \
+    node deployment/cdn-fingerprint.js frontend/dist/$FINGERPRINT
 
 ####################################
 echo "STEP 2 - BUILD BACKEND LAMBDA"
@@ -93,7 +108,11 @@ if npm run | grep -q "build:backend"; then
 else
     FINGERPRINT=${FINGERPRINT} npm exec -c 'rollup -c rollup.backend.config.js'
 fi
-cp frontend/dist/$FINGERPRINT/index.html backend/dist
+# Copy all built HTML pages into backend/dist, preserving directory structure
+# so render_handler can find them by URL path (e.g., /about → about/index.html).
+# Non-HTML assets (CSS, images, JS) stay in S3, served from the CDN.
+rsync -a --include='*/' --include='*.html' --include='*.md' --exclude='*' \
+    frontend/dist/$FINGERPRINT/ backend/dist/
 (cd backend/dist && zip -q -9 -r ${VERSION:-deployment}.zip .)
 # exit 0
 

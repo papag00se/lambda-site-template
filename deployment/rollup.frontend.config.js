@@ -1,49 +1,25 @@
-import nodeResolve from "@rollup/plugin-node-resolve";
-import fs from "fs";
+import nodeResolve from '@rollup/plugin-node-resolve';
 
-const distDir = `frontend/dist`;
-let indexHtml = fs.readFileSync(`frontend/index.html`).toString('utf8');
-const inputs = [...indexHtml.matchAll(/(?:'|")(?!http)(.*\.js)(?:'|")/gm)].map(m => m[1]);
-const input = inputs.map(m =>{
-	let file = m;
-	if (file.startsWith(`/node_modules`)) {
-		file = file.slice(1);
-	}
-	else if (file.startsWith('@')) {
-		file = `node_modules/${file}`;
-	}
-	if (!file.startsWith(`node_modules/`)) {
-		file = `frontend${file}`;
-	}
-	indexHtml = indexHtml.replace(file, file.split('/')[file.split('/').length-1])
-	return file;
-});
-
-if (process.env.SITE_DOMAIN) {
-	for (const m of indexHtml.matchAll(/(?:src|href|import\()=?(?:'|")(?!http)(.*\.(?:[a-z]{1,5}))(?:'|")/gm)) {
-		indexHtml = indexHtml.replace(m[1], `https://cdn.${process.env.SITE_DOMAIN}/${process.env.FINGERPRINT}${m[1]}`);
-	};
-}
-if (process.env.BASE_FOLDER) {
-	//                                                                         m[1]
-	for (const m of indexHtml.matchAll(/(?:src|href|import\()=?(?:'|")(?!http)(\/.*)(?:'|")/gm)) {
-		indexHtml = indexHtml.replace(m[1], `${process.env.BASE_FOLDER ?? ''}${m[1]}`);
-	};
-}
-
-if (!fs.existsSync(distDir)){
-    fs.mkdirSync(distDir);
-}
-
-fs.appendFileSync(`${distDir}/index.html`, indexHtml);
+/**
+ * Frontend bundle config.
+ *
+ * HTML is built by Eleventy (`.eleventy.js` → `frontend/dist/`). Rollup is now
+ * scoped to JavaScript only: bundle `frontend/main.js` (and its imports) into
+ * `frontend/dist/main.js`. The build pipeline runs Eleventy first, then Rollup.
+ *
+ * CDN fingerprinting (formerly handled here) lives in `.eleventy.js` as the
+ * `cdn-fingerprint` transform. The previous BASE_FOLDER prefixing has been
+ * dropped intentionally.
+ */
+const distDir = 'frontend/dist';
 
 export default (async () => ({
-	input,
-	plugins: [
-		nodeResolve()
-	],
-	output: {
-		dir: distDir,
-		format: 'es'
-	}
+    input: 'frontend/main.js',
+    plugins: [
+        nodeResolve()
+    ],
+    output: {
+        dir: distDir,
+        format: 'es'
+    }
 }))();
